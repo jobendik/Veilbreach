@@ -1,0 +1,582 @@
+/* ==========================================================================
+   screens.css — menu, reward, event, result screens plus modal, toasts,
+   floating text, and error overlay
+   ========================================================================== */
+
+/* -------------------- Menu screen -------------------- */
+
+.logo {
+  width: min(920px, 94vw);
+  padding: 40px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(25, 31, 62, 0.88), rgba(7, 9, 19, 0.74)),
+    radial-gradient(circle at 50% 0%, rgba(118, 83, 255, 0.28), transparent 44%);
+  border-radius: 34px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: conic-gradient(
+    from 160deg,
+    transparent,
+    rgba(112, 216, 255, 0.32),
+    transparent,
+    rgba(198, 105, 255, 0.26),
+    transparent
+  );
+  opacity: 0.34;
+  filter: blur(18px);
+  z-index: -1;
+}
+
+.menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.feature-card {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 20px;
+  padding: 16px;
+  min-height: 126px;
+}
+
+.feature-card strong {
+  display: block;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.feature-card span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* -------------------- Reward & event screens -------------------- */
+
+.reward-screen,
+.event-screen {
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-box,
+.event-box {
+  width: min(1100px, 96vw);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(25, 31, 62, 0.92), rgba(8, 10, 22, 0.9)),
+    radial-gradient(circle at 50% 0%, rgba(118, 83, 255, 0.20), transparent 50%);
+  border-radius: 30px;
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+.reward-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  margin: 26px 0;
+}
+
+.reward-cards .card {
+  transform: none;
+}
+
+.reward-cards .card:hover {
+  transform: translateY(-10px) scale(1.04);
+  border-color: rgba(107, 214, 255, 0.72);
+}
+
+.reward-actions,
+.event-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.event-deck-section {
+  margin-top: 24px;
+}
+
+.deck-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  max-height: 230px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+}
+
+/* -------------------- Deck modal -------------------- */
+
+.deck-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+}
+
+.deck-modal-inner {
+  width: min(1160px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 26px;
+  border: 1px solid var(--line2);
+  background: rgba(11, 14, 30, 0.96);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.deck-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+/* -------------------- Toasts & floating text -------------------- */
+
+.toast-zone {
+  position: fixed;
+  pointer-events: none;
+  inset: 0;
+  z-index: 1000;
+}
+
+.float-text {
+  position: fixed;
+  z-index: 1001;
+  pointer-events: none;
+  font-weight: 1000;
+  font-size: 24px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  animation: floatUp 0.9s ease forwards;
+  transform: translate(-50%, 0);
+}
+
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.92);
+  }
+  20% { opacity: 1; }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -64px) scale(1.08);
+  }
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 84px;
+  transform: translateX(-50%);
+  min-width: 280px;
+  max-width: 620px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(107, 214, 255, 0.34);
+  background: rgba(7, 10, 24, 0.92);
+  color: var(--text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  animation: toastIn 1.7s ease forwards;
+  text-align: center;
+  font-weight: 800;
+}
+
+@keyframes toastIn {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  12%, 80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* -------------------- Error overlay -------------------- */
+
+.error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+  padding: 24px;
+}
+
+.error-box {
+  width: min(720px, 96vw);
+  border: 1px solid rgba(255, 129, 156, 0.5);
+  background:
+    linear-gradient(180deg, rgba(55, 22, 36, 0.96), rgba(16, 10, 20, 0.96));
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+
+.error-message {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  max-height: 220px;
+  overflow: auto;
+  color: #ffd9e3;
+  font-size: 12px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  margin: 18px 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Map / Shop / Rest / Treasure / Potion bar — v3 screens
+   ========================================================================== */
+
+.map-screen {
+  padding: 16px 24px 32px;
+  min-height: 100vh;
+}
+.map-topbar {
+  margin-bottom: 18px;
+}
+.map-body {
+  display: flex;
+  justify-content: center;
+}
+.map-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(960px, 100%);
+}
+.map-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  align-items: start;
+  justify-items: center;
+}
+.map-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+}
+.map-cell.empty { visibility: hidden; }
+.map-node {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--line2);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+.map-node:disabled { cursor: not-allowed; opacity: 0.55; }
+.map-node.is-available:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--text);
+  box-shadow: 0 0 16px rgba(107, 214, 255, 0.45);
+}
+.map-node.is-available:not(:disabled):hover { transform: translateY(-2px); }
+.map-node.is-current {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 16px rgba(245, 195, 91, 0.55);
+}
+.map-node.is-cleared { opacity: 0.35; }
+.map-node.node-elite { background: linear-gradient(180deg, #3a0f1a, #6d1a2e); color: var(--red); }
+.map-node.node-boss { background: linear-gradient(180deg, #4c0f1f, #8a1630); color: var(--gold); border-color: var(--gold); }
+.map-node.node-shop { background: linear-gradient(180deg, #1a2e12, #305c24); color: var(--green); }
+.map-node.node-rest { background: linear-gradient(180deg, #3a1c10, #6a3318); color: var(--orange); }
+.map-node.node-treasure { background: linear-gradient(180deg, #1a2144, #2b3580); color: var(--violet); }
+.map-node.node-event { background: linear-gradient(180deg, #1a2030, #2a3550); color: var(--blue); }
+.node-label {
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 84px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Potion bar — shared between map and combat topbars */
+.map-potion-bar,
+.combat-potion-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.potion-slot {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background: rgba(10, 14, 28, 0.5);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.potion-slot.empty { opacity: 0.45; }
+.potion-slot.filled { border: 1px solid var(--line2); }
+.potion-slot .potion-use {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 9px;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.potion-slot .potion-use:disabled { opacity: 0.5; cursor: not-allowed; }
+.potion-slot.is-armed {
+  box-shadow: 0 0 0 2px #f5c35b, 0 0 12px rgba(245, 195, 91, 0.55);
+  border-color: #f5c35b !important;
+}
+.potion-slot .potion-discard {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 18px;
+  border-radius: 50%;
+}
+.pill.gold strong { color: var(--gold); }
+
+/* Shop */
+.shop-screen { padding: 24px; }
+.shop-box {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px 28px;
+}
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.shop-header h2 { margin: 0; }
+.shop-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.shop-item {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+.shop-item.sold { opacity: 0.45; }
+.shop-item small { color: var(--muted); line-height: 1.3; }
+.shop-price { font-weight: 700; color: var(--gold); }
+.shop-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.empty-note { color: var(--muted); font-style: italic; }
+.relic-big, .potion-big {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+/* Rest & Treasure */
+.rest-screen, .treasure-screen {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+.rest-box, .treasure-box {
+  max-width: 640px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 32px;
+  text-align: center;
+}
+.rest-actions, .treasure-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.treasure-relic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0;
+}
+
+/* Reward lines */
+.reward-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(10, 14, 28, 0.45);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.reward-line.claimed { opacity: 0.55; justify-content: center; }
+.potion-chip {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 22px;
+  font-weight: 700;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Event choices */
+.event-choices {
+  flex-direction: column;
+  align-items: stretch;
+}
+.event-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+.event-choice:hover:not(:disabled) { border-color: var(--blue); }
+.event-choice.is-disabled, .event-choice:disabled { opacity: 0.5; cursor: not-allowed; }
+.event-choice small { color: var(--muted); }
+.disabled-reason { color: var(--red); font-style: normal; }
+
+/* Relic rarity pills — shown on shop items and reward-relic choices so
+   players can scan loot tier at a glance without reading tooltips. */
+.rarity-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: rgba(10, 14, 28, 0.55);
+}
+.rarity-common   { color: #c7cfe0; }
+.rarity-uncommon { color: #74c4ff; }
+.rarity-rare     { color: #c595ff; }
+.rarity-boss     { color: #ff876c; }
+
+.shop-item[data-rarity="Uncommon"] { border-color: rgba(116, 196, 255, 0.5); }
+.shop-item[data-rarity="Rare"]     { border-color: rgba(197, 149, 255, 0.6); box-shadow: 0 0 0 1px rgba(197, 149, 255, 0.15) inset; }
+.shop-item[data-rarity="Boss"]     { border-color: rgba(255, 135, 108, 0.65); }
+
+/* Reward-screen relic choice buttons: dedicated layout with rarity pill. */
+.relic-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 160px;
+  padding: 14px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+}
+.relic-choice:hover { border-color: var(--blue); transform: translateY(-1px); }
+.relic-choice .relic-choice-icon { font-size: 26px; }
+.relic-choice small { color: var(--muted); line-height: 1.3; }
+.relic-choice[data-rarity="Uncommon"] { border-color: rgba(116, 196, 255, 0.55); }
+.relic-choice[data-rarity="Rare"]     { border-color: rgba(197, 149, 255, 0.65); box-shadow: 0 0 0 1px rgba(197, 149, 255, 0.15) inset; }
+.relic-choice[data-rarity="Boss"]     { border-color: rgba(255, 135, 108, 0.7); }

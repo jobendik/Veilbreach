@@ -1,0 +1,1 @@
+export { renderEnemy } from "./PlayerPanel";

@@ -1,0 +1,20 @@
+{
+  "name": "veilbreach-relic-deck",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Veilbreach: Relic Deck — a single-player roguelike deckbuilder. TypeScript + Vite refactor of the original single-file prototype.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vitest": "^4.1.5"
+  }
+}
