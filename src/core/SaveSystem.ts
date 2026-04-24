@@ -200,7 +200,9 @@ function isValidCombat(x: unknown): x is CombatState {
     if (!isValidEnemyInstance(e)) return false;
   }
   if (!isObject(x.powers) || !isFiniteNumber(x.powers.stormEngine)) return false;
-  // cardsPlayedThisTurn may be absent in older v2 snapshots; default to 0 on load.
+  // cardsPlayedThisTurn may be absent in saves written before this field was
+  // added. Absent fields are allowed here and will be defaulted to 0 when the
+  // full SaveData is assembled further down in validateSaveData.
   if (x.cardsPlayedThisTurn !== undefined && !isFiniteNumber(x.cardsPlayedThisTurn)) return false;
   return true;
 }
@@ -338,6 +340,8 @@ function migrateV1Save(parsed: Record<string, unknown>): LoadResult {
   const maxHp = isFiniteNumber(run1.maxHp) ? (run1.maxHp as number) : CONFIG.startingMaxHp;
   const hp = isFiniteNumber(run1.hp) ? Math.max(1, run1.hp as number) : maxHp;
 
+  // `>>> 0` coerces the seed to an unsigned 32-bit integer, matching the range
+  // expected by the mulberry32 RNG constructor.
   const seed = (isFiniteNumber(run1.seed) ? run1.seed as number : Date.now()) >>> 0;
 
   const migratedRun: RunState = {

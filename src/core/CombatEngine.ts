@@ -389,7 +389,8 @@ export class CombatEngine implements CombatEngineLike {
         hits: 1,
       };
       this.fire("onBeforeDamage", { damage: dmgCtx, source, target });
-      finalAmount = Math.max(0, dmgCtx.amount);
+      // Guard against relic hooks setting an invalid (NaN / Infinity) amount.
+      finalAmount = Number.isFinite(dmgCtx.amount) ? Math.max(0, dmgCtx.amount) : amount;
     }
 
     const blocked = Math.min(target.block || 0, finalAmount);

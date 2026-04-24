@@ -291,7 +291,6 @@ describe("damage hooks", () => {
     const target = makeUnit(20);
     // Give the player a dummy relic that listens on onBeforeDamage.
     state.run!.relics = ["cracked_core"]; // doesn't hook damage — spy only
-    const captured: unknown[] = [];
 
     // Directly patch fireHook on the engine instance by spying on engine.fire.
     const fireSpy = vi.spyOn(engine as unknown as { fire: (...args: unknown[]) => void }, "fire");
@@ -303,7 +302,6 @@ describe("damage hooks", () => {
     expect(calls).toContain("onAfterDamage");
 
     fireSpy.mockRestore();
-    void captured; // silence unused variable warning
   });
 
   it("onBeforeDamage does NOT fire for status damage", () => {
@@ -321,7 +319,7 @@ describe("damage hooks", () => {
   });
 
   it("a relic modifying ctx.damage.amount via onBeforeDamage changes the actual damage dealt", () => {
-    const { engine, state, run } = makeEngine();
+    const { engine, run } = makeEngine();
     const target = makeUnit(50);
 
     // Inject a synthetic relic that doubles incoming damage amount via the hook.
@@ -341,6 +339,5 @@ describe("damage hooks", () => {
 
     // Restore.
     engine.fire = originalFire;
-    void state; // silence unused variable warning
   });
 });
