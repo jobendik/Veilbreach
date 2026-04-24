@@ -21,6 +21,7 @@ npm run dev      # local dev server on http://localhost:5173
 npm run build    # production build into dist/
 npm run preview  # preview the production build
 npm run typecheck
+npm test         # Vitest unit-test suite (RNG, save round-trip, status timing)
 ```
 
 ---
@@ -229,23 +230,13 @@ procedural sigil if the image fails to load.
 
 ## Known limitations / TODOs
 
-- **No migration for v1 saves.** The save schema changed; v1 saves from
-  the original single-file prototype are rejected with a clear message
-  and cleared, not migrated. A migrator could be added in
-  `SaveSystem.validateSaveData`.
-- **Minimal unit tests.** The core logic is pure-functional enough to
-  test, but the project doesn't ship a test runner yet. A Vitest setup
-  against the `core/` modules would be a natural next step.
-- **Visual polish is intentional but minimal.** The project prioritizes
-  architecture over art direction; landing real card PNGs via `imagePath`
-  is the first step toward a production look.
 - **Enemy AI is deterministic from turn number.** `chooseIntent` doesn't
   use the run RNG today. That's intentional (makes behavior predictable
   for testing) but means there's no variety across identical encounters.
   Adding `rng` to the `chooseIntent` signature would be straightforward.
-- **`onBeforeDamage` / `onAfterDamage` hooks exist in the type system
-  but aren't fired yet.** Adding them in `applyDamage` is a few lines;
-  they're reserved for future relics that modify damage calculations.
+- **Visual polish is intentional but minimal.** The project prioritizes
+  architecture over art direction; landing real card PNGs via `imagePath`
+  is the first step toward a production look.
 - **No i18n.** All strings are English literals in the screen modules.
 
 ---

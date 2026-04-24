@@ -11,4 +11,8 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: true,
   },
+  test: {
+    environment: "node",
+    include: ["src/**/__tests__/**/*.test.ts"],
+  },
 });

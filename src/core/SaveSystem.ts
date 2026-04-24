@@ -12,7 +12,7 @@ import type {
 } from "./Types";
 import { SAVE_VERSION } from "./Types";
 import { CONFIG } from "../data/config";
-import { isValidCardId } from "../data/cards";
+import { isValidCardId, createCardInstance } from "../data/cards";
 import { isValidEnemyId } from "../data/enemies";
 import { isValidRelicId } from "../data/relics";
 
@@ -98,6 +98,14 @@ export function loadSave(): LoadResult {
 
   if (!raw) return { ok: false, reason: "No save found." };
 
+  return parseSave(raw);
+}
+
+/**
+ * Parse and validate a raw JSON string as a `SaveData` without touching
+ * `localStorage`. Useful for unit tests and offline validation tooling.
+ */
+export function parseSave(raw: string): LoadResult {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -192,6 +200,8 @@ function isValidCombat(x: unknown): x is CombatState {
     if (!isValidEnemyInstance(e)) return false;
   }
   if (!isObject(x.powers) || !isFiniteNumber(x.powers.stormEngine)) return false;
+  // cardsPlayedThisTurn may be absent in older v2 snapshots; default to 0 on load.
+  if (x.cardsPlayedThisTurn !== undefined && !isFiniteNumber(x.cardsPlayedThisTurn)) return false;
   return true;
 }
 
@@ -203,10 +213,13 @@ function validateSaveData(parsed: unknown): LoadResult {
     return { ok: false, reason: "Save file has no version." };
   }
   if (parsed.version !== SAVE_VERSION) {
-    // No in-place migrator for older formats; reject safely.
+    if (parsed.version === 1) {
+      return migrateV1Save(parsed);
+    }
+    // Unknown future version — reject safely.
     return {
       ok: false,
-      reason: `Save file is from an older version (${parsed.version}) and cannot be loaded.`,
+      reason: `Save file is from an unrecognized version (${parsed.version}) and cannot be loaded.`,
     };
   }
   if (!isValidRun(parsed.run)) {
@@ -239,15 +252,136 @@ function validateSaveData(parsed: unknown): LoadResult {
 
   const log = Array.isArray(parsed.log) ? parsed.log.filter((l): l is string => typeof l === "string") : [];
 
+  // Ensure optional CombatState fields added after v2.0 are defaulted so that
+  // saves written before these fields existed still load cleanly.
+  let combat = (parsed.combat as CombatState | null) ?? null;
+  if (combat) {
+    combat = {
+      ...combat,
+      cardsPlayedThisTurn: isFiniteNumber(combat.cardsPlayedThisTurn) ? combat.cardsPlayedThisTurn : 0,
+      firstTurn: typeof combat.firstTurn === "boolean" ? combat.firstTurn : false,
+    };
+  }
+
   const data: SaveData = {
     version: parsed.version,
     timestamp: isFiniteNumber(parsed.timestamp) ? parsed.timestamp : Date.now(),
     run: parsed.run as RunState,
     screen,
-    combat: (parsed.combat as CombatState | null) ?? null,
+    combat,
     reward: (parsed.reward as SaveData["reward"]) ?? null,
     event: (parsed.event as SaveData["event"]) ?? null,
     log,
   };
+  return { ok: true, data };
+}
+
+/* -------------------------------------------------------------------------- */
+/* V1 → V2 migration                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Best-effort migration of a v1 save (the original single-file prototype).
+ *
+ * V1 runs lacked `id`, `seed`, `rngState`, `defeated`, `upgradedThisRun`,
+ * `removedThisRun`, and sometimes `block`/`statuses`. Cards in the deck may
+ * be plain card-ID strings or objects without `uid`/`tempCost`.
+ *
+ * Because the original RNG state can't be recovered the migrated run uses a
+ * freshly-seeded RNG. Mid-combat state is discarded; the player resumes at a
+ * skippable reward screen for their current encounter so their deck and HP are
+ * preserved.
+ */
+function migrateV1Save(parsed: Record<string, unknown>): LoadResult {
+  const run1 = isObject(parsed.run) ? parsed.run : null;
+  if (!run1) {
+    return { ok: false, reason: "V1 save has no run data — cannot migrate." };
+  }
+
+  // --- Deck ---
+  const deck: CardInstance[] = [];
+  let uidCounter = 0;
+  const makeUid = (): string => `migrated_${Date.now().toString(36)}_${uidCounter++}`;
+
+  if (Array.isArray(run1.deck)) {
+    for (const item of run1.deck) {
+      if (typeof item === "string" && isValidCardId(item)) {
+        // v1 stored bare card-ID strings
+        deck.push(createCardInstance(item));
+      } else if (isObject(item) && typeof item.cardId === "string" && isValidCardId(item.cardId)) {
+        deck.push({
+          uid: typeof item.uid === "string" ? item.uid : makeUid(),
+          cardId: item.cardId,
+          upgraded: item.upgraded === true,
+          tempCost: null,
+        });
+      }
+    }
+  }
+
+  if (deck.length === 0) {
+    return { ok: false, reason: "V1 save has no valid cards in deck — cannot migrate." };
+  }
+
+  // --- Relics ---
+  const relics: RelicId[] = [];
+  if (Array.isArray(run1.relics)) {
+    for (const r of run1.relics) {
+      if (typeof r === "string" && isValidRelicId(r)) relics.push(r as RelicId);
+    }
+  }
+
+  // --- Numeric fields with safe defaults ---
+  const encounterIndex = isFiniteNumber(run1.encounterIndex)
+    ? Math.max(0, run1.encounterIndex as number)
+    : 0;
+  const maxHp = isFiniteNumber(run1.maxHp) ? (run1.maxHp as number) : CONFIG.startingMaxHp;
+  const hp = isFiniteNumber(run1.hp) ? Math.max(1, run1.hp as number) : maxHp;
+
+  const seed = (isFiniteNumber(run1.seed) ? run1.seed as number : Date.now()) >>> 0;
+
+  const migratedRun: RunState = {
+    id: `run_migrated_${Date.now().toString(36)}`,
+    encounterIndex,
+    maxHp,
+    hp,
+    block: isFiniteNumber(run1.block) ? (run1.block as number) : 0,
+    statuses: isValidStatusMap(run1.statuses) ? (run1.statuses as StatusMap) : {},
+    deck,
+    relics,
+    defeated: isFiniteNumber(run1.defeated) ? (run1.defeated as number) : encounterIndex,
+    upgradedThisRun: isFiniteNumber(run1.upgradedThisRun) ? (run1.upgradedThisRun as number) : 0,
+    removedThisRun: isFiniteNumber(run1.removedThisRun) ? (run1.removedThisRun as number) : 0,
+    seed,
+    // RNG state cannot be recovered from v1 — resume from seed.
+    rngState: seed,
+  };
+
+  // Resume at a skippable reward screen for the current encounter.
+  // This preserves the player's deck and HP while discarding any
+  // mid-combat state that would be unsafe to resume without a v2 combat snapshot.
+  const reward: SaveData["reward"] = {
+    cardChoices: [],
+    relicOffer: [],
+    pickedCard: true,   // no card choices — player just clicks Continue
+    pickedRelic: true,
+    nextIndex: encounterIndex,
+    canUpgrade: false,
+    canHeal: false,
+    canRemove: false,
+    isAdvancing: false,
+  };
+
+  const data: SaveData = {
+    version: SAVE_VERSION,
+    timestamp: isFiniteNumber(parsed.timestamp) ? (parsed.timestamp as number) : Date.now(),
+    run: migratedRun,
+    screen: "reward",
+    combat: null,
+    reward,
+    event: null,
+    log: ["(Run migrated from an older save format. Combat progress was reset.)"],
+  };
+
   return { ok: true, data };
 }

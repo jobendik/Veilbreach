@@ -2,6 +2,7 @@ import type {
   CardInstance,
   CombatEngineLike,
   CombatState,
+  DamageContext,
   Encounter,
   EnemyInstance,
   EnemyIntent,
@@ -157,6 +158,13 @@ export class CombatEngine implements CombatEngineLike {
 
     // PLAYER_TURN_START
     this.processStartOfTurnStatuses(run);
+
+    // If poison/burn killed the player on their own turn, end the run now.
+    if (run.hp <= 0) {
+      this.loseRun();
+      return;
+    }
+
     this.resetTempCosts();
     this.gainBlockFromPlated(run);
     this.fire("onTurnStart");
@@ -310,6 +318,12 @@ export class CombatEngine implements CombatEngineLike {
 
       this.checkEnemyDeaths();
 
+      // If the player was killed by thorns or a card effect, end the run.
+      if (this.state.run!.hp <= 0) {
+        this.loseRun();
+        return;
+      }
+
       // If everything is dead, transition to reward after a beat.
       if (this.areAllEnemiesDefeated()) {
         await this.sleep(240);
@@ -346,20 +360,41 @@ export class CombatEngine implements CombatEngineLike {
   ): number {
     const run = this.state.run!;
     const amount = calculateAttackDamage(baseAmount, run, target, cardData);
-    return this.applyDamage(target, amount, run, "attack");
+    return this.applyDamage(target, amount, run, "attack", cardData);
   }
 
-  /** Generic damage application. Emits hooks and handles thorns + death. */
+  /**
+   * Generic damage application. Fires `onBeforeDamage` / `onAfterDamage` hooks
+   * for attack-type damage so relics can modify or react to the hit.
+   */
   applyDamage(
     target: Unit,
     amount: number,
     source: Unit | null,
-    damageType: "attack" | "status" | "thorns" | "pure"
+    damageType: "attack" | "status" | "thorns" | "pure",
+    cardData?: ResolvedCardData | null
   ): number {
     if (!target || target.dead) return 0;
-    const blocked = Math.min(target.block || 0, amount);
+
+    // Allow relics to modify the incoming damage amount before it is applied.
+    let finalAmount = amount;
+    if (damageType === "attack" && source) {
+      const dmgCtx: DamageContext = {
+        source,
+        target,
+        cardData: cardData ?? undefined,
+        baseAmount: amount,
+        amount,
+        damageType,
+        hits: 1,
+      };
+      this.fire("onBeforeDamage", { damage: dmgCtx, source, target });
+      finalAmount = Math.max(0, dmgCtx.amount);
+    }
+
+    const blocked = Math.min(target.block || 0, finalAmount);
     target.block = Math.max(0, (target.block || 0) - blocked);
-    const hpDamage = Math.max(0, amount - blocked);
+    const hpDamage = Math.max(0, finalAmount - blocked);
     target.hp = Math.max(0, target.hp - hpDamage);
 
     this.host.playSound("hit");
@@ -390,6 +425,20 @@ export class CombatEngine implements CombatEngineLike {
       if (target !== this.state.run) {
         this.fire("onEnemyKilled", { target });
       }
+    }
+
+    // Notify relics that attack damage was dealt (after block absorption).
+    if (damageType === "attack" && source) {
+      const dmgCtx: DamageContext = {
+        source,
+        target,
+        cardData: cardData ?? undefined,
+        baseAmount: amount,
+        amount: hpDamage,
+        damageType,
+        hits: 1,
+      };
+      this.fire("onAfterDamage", { damage: dmgCtx, source, target });
     }
 
     return hpDamage;
