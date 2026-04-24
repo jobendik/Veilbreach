@@ -1,0 +1,178 @@
+/* ==========================================================================
+   main.css — design tokens and global imports
+
+   This file owns the :root variables (the design system for the game) and
+   imports the specialized stylesheets in dependency order: layout → cards
+   → combat → screens → responsive.
+   ========================================================================== */
+
+@import "./layout.css";
+@import "./cards.css";
+@import "./combat.css";
+@import "./screens.css";
+@import "./responsive.css";
+
+:root {
+  --bg0: #070811;
+  --bg1: #0e1020;
+  --panel: rgba(19, 23, 42, 0.86);
+  --panel2: rgba(29, 35, 61, 0.9);
+  --line: rgba(174, 199, 255, 0.18);
+  --line2: rgba(174, 199, 255, 0.34);
+  --text: #eef4ff;
+  --muted: #9faad0;
+  --gold: #f5c35b;
+  --blue: #6bd6ff;
+  --violet: #b47cff;
+  --green: #7af6a3;
+  --red: #ff617d;
+  --orange: #ffae5a;
+  --shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+  --card-w: 172px;
+  --card-h: 248px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(104, 70, 212, 0.32), transparent 32%),
+    radial-gradient(circle at 82% 18%, rgba(58, 195, 255, 0.18), transparent 30%),
+    radial-gradient(circle at 50% 90%, rgba(255, 102, 84, 0.13), transparent 38%),
+    linear-gradient(135deg, #05060d 0%, #0a0d1a 44%, #070814 100%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(circle at 50% 35%, black 0%, transparent 75%);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.38) 78%);
+  z-index: 1;
+}
+
+#app {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  border: 1px solid var(--line2);
+  background:
+    linear-gradient(180deg, rgba(92, 113, 180, 0.32), rgba(32, 38, 74, 0.86)),
+    rgba(25, 31, 57, 0.9);
+  border-radius: 14px;
+  padding: 11px 16px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease,
+    background 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(134, 213, 255, 0.72);
+  box-shadow: 0 14px 34px rgba(36, 174, 255, 0.16);
+}
+
+button:active:not(:disabled) { transform: translateY(1px); }
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  filter: grayscale(0.5);
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(134, 213, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.primary {
+  background:
+    linear-gradient(180deg, rgba(102, 222, 255, 0.95), rgba(84, 76, 255, 0.78)),
+    #3440ff;
+  border-color: rgba(182, 239, 255, 0.7);
+  color: #06101d;
+  font-weight: 900;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.danger {
+  background:
+    linear-gradient(180deg, rgba(255, 87, 116, 0.9), rgba(122, 35, 57, 0.9)),
+    #551c2a;
+  border-color: rgba(255, 128, 150, 0.6);
+}
+
+.ghost {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.small-btn {
+  padding: 7px 10px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(42px, 8vw, 92px);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 0 42px rgba(101, 159, 255, 0.36);
+}
+
+h2, h3 { margin: 0; }
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  max-width: 760px;
+  margin: 20px auto 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.subtitle.left-aligned {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-top: 22px;
+}
